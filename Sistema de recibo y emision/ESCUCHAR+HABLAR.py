@@ -1,13 +1,11 @@
 import speech_recognition as sr
 import pyttsx3
+import serial
+import time
 
 # Inicializar el reconocimiento de voz y el motor de texto a voz
 recognizer = sr.Recognizer()
 engine = pyttsx3.init()
-
-def datos(datos):
-    texto1 = ["Hola como estas"]
-    return texto1
 
 def escuchar_y_hablar():
     with sr.Microphone() as source:
@@ -19,10 +17,10 @@ def escuchar_y_hablar():
         try:
             # Reconocer el habla usando Google Web Speech API
             texto = recognizer.recognize_google(audio, language='es-ES')
-            print(f"Tú dijiste: {datos(1)}")
+            print(f"Tú dijiste: {texto}")
 
             # Decir en voz alta el texto reconocido
-            engine.say() #CAMBIAR ESTO: HAY QUE RECIBIR EL NUEVO TEXTO GENERADO PARA HACER QUE EL PARLANTE EMITA ESO
+            engine.say(texto) #CAMBIAR ESTO: HAY QUE RECIBIR EL NUEVO TEXTO GENERADO PARA HACER QUE EL PARLANTE EMITA ESO
             engine.runAndWait()
 
         except sr.UnknownValueError:
