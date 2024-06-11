@@ -1,4 +1,4 @@
-'''
+"""
 import serial
 import time
 import speech_recognition as sr
@@ -51,7 +51,7 @@ def esperar_boton():
                 puerto_serie.flushInput()  # Borra la información del puerto serie
 
 if __name__ == "__main__":
-    esperar_boton() '''
+    esperar_boton() """
 
 import serial
 import time
@@ -67,7 +67,7 @@ puerto_serie = serial.Serial('COM3', 9600)  # Ajusta el nombre del puerto COM se
 
 # Flag para indicar si la función escuchar_y_hablar() está en ejecución
 en_ejecucion = False
-
+texto_actual = ""
 def escuchar_y_hablar(detener_escucha=False):
     global en_ejecucion
     en_ejecucion = True
@@ -81,9 +81,11 @@ def escuchar_y_hablar(detener_escucha=False):
 
         try:
             # Reconocer el habla usando Google Web Speech API
+            if(detener_escucha):
+                return "2"                
             texto = recognizer.recognize_google(audio, language='es-ES')
             print(f"Tú dijiste: {texto}")
-
+            texto_actual = texto
             # Decir en voz alta el texto reconocido
             engine.say(texto)
             engine.runAndWait()
@@ -93,7 +95,7 @@ def escuchar_y_hablar(detener_escucha=False):
         except sr.RequestError as e:
             print(f"No se pudo solicitar los resultados del servicio de reconocimiento de voz; {e}")
 
-    # Restablecer el estado de la bandera después de que la función haya terminado
+    
     en_ejecucion = False
 
 def esperar_boton():
@@ -104,12 +106,12 @@ def esperar_boton():
             if mensaje == '1':
                 detener_escucha = False
                 escuchar_y_hablar(detener_escucha)
-                time.sleep(5)  # Espera 5 segundos para evitar la repetición rápida si el botón está presionado
-                puerto_serie.flushInput()  # Borra la información del puerto serie
+                time.sleep(5) 
+                puerto_serie.flushInput()  
             elif mensaje == '2':
                 detener_escucha = True
                 escuchar_y_hablar(detener_escucha)
 
 if __name__ == "__main__":
-    esperar_boton()
+    esperar_boton() 
 
