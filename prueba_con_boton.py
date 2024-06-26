@@ -65,53 +65,52 @@ engine = pyttsx3.init()
 # Configurar el puerto serie para la comunicación con Arduino
 puerto_serie = serial.Serial('COM3', 9600)  # Ajusta el nombre del puerto COM según corresponda
 
-# Flag para indicar si la función escuchar_y_hablar() está en ejecución
-en_ejecucion = False
-texto_actual = ""
-def escuchar_y_hablar(detener_escucha=False):
-    global en_ejecucion
-    en_ejecucion = True
-    with sr.Microphone() as source:
-        print("Escuchando...")
-        # Ajustar el ruido ambiental para mejorar la precisión
-        recognizer.adjust_for_ambient_noise(source)
-        if detener_escucha:
-            return '2'  # Retorna '2' si se debe detener la escucha
-        audio = recognizer.listen(source)
+def escuchar_y_hablar():
+    global texto_reconocido, mic_activado
 
-        try:
-            # Reconocer el habla usando Google Web Speech API
-            if(detener_escucha):
-                return "2"                
-            texto = recognizer.recognize_google(audio, language='es-ES')
-            print(f"Tú dijiste: {texto}")
-            texto_actual = texto
-            # Decir en voz alta el texto reconocido
-            engine.say(texto)
-            engine.runAndWait()
+    mic_activado = True
+    texto_reconocido = ""
 
-        except sr.UnknownValueError:
-            print("No se pudo entender el audio")
-        except sr.RequestError as e:
-            print(f"No se pudo solicitar los resultados del servicio de reconocimiento de voz; {e}")
+    while mic_activado:
+        with sr.Microphone() as source:
+            print("Escuchando...")
+            recognizer.adjust_for_ambient_noise(source)
 
-    
-    en_ejecucion = False
+            try:
+                audio = recognizer.listen(source)
+                texto = recognizer.recognize_google(audio, language='es-ES')
+                print(f"Tú dijiste: {texto}")
+
+                texto_reconocido += texto + " "
+                engine.say(texto)
+                engine.runAndWait()
+
+            except sr.UnknownValueError:
+                print("No se pudo entender el audio")
+            except sr.RequestError as e:
+                print(f"No se pudo solicitar los resultados del servicio de reconocimiento de voz; {e}")
 
 def esperar_boton():
-    global en_ejecucion
     while True:
-        if puerto_serie.in_waiting > 0 and not en_ejecucion:
+        if puerto_serie.in_waiting > 0:
             mensaje = puerto_serie.readline().decode().strip()
+
             if mensaje == '1':
-                detener_escucha = False
-                escuchar_y_hablar(detener_escucha)
-                time.sleep(5) 
-                puerto_serie.flushInput()  
+                puerto_serie.flushInput()
+                escuchar_y_hablar()
+                
+
             elif mensaje == '2':
-                detener_escucha = True
-                escuchar_y_hablar(detener_escucha)
+                mic_activado = False
+                puerto_serie.flushInput()
+
+                # Mostrar el texto reconocido
+                if texto_reconocido:
+                    print("Texto reconocido:")
+                    print(texto_reconocido)
+                    texto_reconocido = ""
 
 if __name__ == "__main__":
-    esperar_boton() 
+    esperar_boton()
+
 
